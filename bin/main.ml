@@ -1,83 +1,40 @@
 open Minttea
 
-(* Type definitions and initial model *)
-type model = {
-  choices : (string * [ `selected | `unselected ]) list;
-  cursor : int;
-}
+let dark_gray = Spices.color "241"
 
-let initial_model =
-  {
-    cursor = 0;
-    choices =
-      [
-        ("Buy empanadas 🥟", `unselected);
-        ("Buy carrots 🥕", `unselected);
-        ("Buy cupcakes 🧁", `unselected);
-      ];
-  }
+let keyword fmt =
+  Spices.(default |> faint true |> fg dark_gray |> bold true |> build) fmt
 
-let init _model = Command.Noop
+let red fmt = Spices.(default |> fg (color "#992222") |> build) fmt
 
-(* Update function with pattern matching for events *)
+type s = { counter : int; keys : string list }
+
+let init _ = Command.Noop
+let initial_model = { counter = 0; keys = [] }
+
 let update event model =
   match event with
-  | Event.KeyDown (Key "q" | Escape) -> (model, Command.Quit)
-  | Event.KeyDown (Up | Key "k") ->
-      let cursor =
-        if model.cursor = 0 then List.length model.choices - 1
-        else model.cursor - 1
-      in
-      ({ model with cursor }, Command.Noop)
-  | Event.KeyDown (Down | Key "j") ->
-      let cursor =
-        if model.cursor = List.length model.choices - 1 then 0
-        else model.cursor + 1
-      in
-      ({ model with cursor }, Command.Noop)
-  | Event.KeyDown ((Enter | Space)) ->
-      let toggle status =
-        match status with `selected -> `unselected | `unselected -> `selected
-      in
-      let choices =
-        List.mapi
-          (fun idx (name, status) ->
-            let status = if idx = model.cursor then toggle status else status in
-            (name, status))
-          model.choices
-      in
-      ({ model with choices }, Command.Noop)
+  | Event.KeyDown ((Key "q" | Escape)) -> (model, Command.Quit)
+  | Event.KeyDown (Key "k") ->
+      let model = { counter = model.counter - 1; keys = model.keys} in
+      (model, Command.Noop)
+  | Event.KeyDown (Key "j") ->
+      let model = { counter = model.counter + 1; keys = model.keys} in
+      (model, Command.Noop)
+  | Event.KeyDown (Key k) ->
+      let model = { counter = model.counter + 1; keys = model.keys @ [ k ] } in
+      (model, Command.Noop)
   | _ -> (model, Command.Noop)
 
 let view model =
-  let open Spices in
-  (* padding and margin using the Spices module *)
-  let checkbox_padded_style = default |> padding_left 1 |> padding_right 1 in
-  let list_margin_style = default |> margin_top 2 |> margin_bottom 2 in
+  if model.counter = -1 then keyword "goodbye!"
+  else
+    let first_6 =
+      model.keys |> List.to_seq |> Seq.take 6 |> List.of_seq |> String.concat ""
+    in
+    let rest =
+      model.keys |> List.to_seq |> Seq.drop 6 |> List.of_seq |> String.concat ""
+    in
+    keyword "%d" model.counter ^ " " ^ first_6 ^ red "%s" rest
 
-  (* apply the padding and margin styling *)
-  let apply_checkbox_style = build checkbox_padded_style in
-  let apply_list_style = build list_margin_style in
-
-  let options =
-    model.choices
-    |> List.mapi (fun idx (name, checked) ->
-           let cursor = if model.cursor = idx then ">" else " " in
-           let checked_symbol = if checked = `selected then "x" else " " in
-           let checkbox = apply_checkbox_style "[%s]" checked_symbol in
-           Format.sprintf "%s %s %s" cursor checkbox name)
-    |> String.concat "\n"
-  in
-  apply_list_style
-    {|
-What should we buy at the market?
-
-%s
-
-Press q to quit.
-    |}
-    options
-
-(* Application start *)
-let app = Minttea.app ~init ~update ~view ()
-let () = Minttea.start app ~initial_model
+let () = Minttea.app ~init ~update ~view () |> Minttea.start ~initial_model
