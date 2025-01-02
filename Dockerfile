@@ -1,22 +1,22 @@
-# Start with an OCaml image
-FROM ocaml/opam:debian-12-ocaml-5.1
+# Build stage
+FROM ocaml/opam:debian-ocaml-5.1 AS builder
 
 # Install system dependencies
-RUN sudo apt-get update && sudo apt-get install -y \
-    libev-dev \
-    pkg-config \
-    m4 \
-    && sudo rm -rf /var/lib/apt/lists/*
+RUN sudo apt-get update && sudo apt-get install -y m4 pkg-config
 
-# Set working directory
+# Copy your project files and set permissions
+COPY . /app/
 WORKDIR /app
+RUN sudo chown -R opam:opam /app
 
-# Copy project files
-COPY . .
-
-# Install project dependencies and build
-RUN opam install . --deps-only --with-test
+# Install OCaml dependencies and build
+RUN opam install . --deps-only 
 RUN opam exec -- dune build
 
-# Set the entrypoint
-ENTRYPOINT ["opam", "exec", "--", "dune", "exec", "tui_blog"]
+
+# Make the executable runnable
+RUN sudo chmod +x /app/_build/default/bin/main.exe
+
+
+# Run the executable
+CMD ["/app/_build/default/bin/main.exe"]
