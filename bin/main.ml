@@ -16,13 +16,13 @@ let update event model =
   match event with
   | Event.KeyDown ((Key "q" | Escape)) -> (model, Command.Quit)
   | Event.KeyDown (Key "k") ->
-      let model = { counter = model.counter - 1; keys = model.keys} in
-      (model, Command.Noop)
-  | Event.KeyDown (Key "j") ->
       let model = { counter = model.counter + 1; keys = model.keys} in
       (model, Command.Noop)
+  | Event.KeyDown (Key "j") ->
+      let model = { counter = model.counter - 1; keys = model.keys} in
+      (model, Command.Noop)
   | Event.KeyDown (Key k) ->
-      let model = { counter = model.counter + 1; keys = model.keys @ [ k ] } in
+      let model = { counter = model.counter; keys = model.keys @ [ k ] } in
       (model, Command.Noop)
   | _ -> (model, Command.Noop)
 
