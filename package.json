@@ -1,0 +1,16 @@
+{
+  "name": "tui-blog",
+  "module": "server.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/ssh2": "^1.15.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "node-pty-prebuilt-multiarch": "^0.10.1-pre.5",
+    "ssh2": "^1.16.0"
+  }
+}

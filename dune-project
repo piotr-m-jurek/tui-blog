@@ -19,7 +19,7 @@
  (name tui_blog)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune minttea spices)
+ (depends ocaml dune minttea spices leaves)
  (tags
   (topics "to describe" your project)))
 

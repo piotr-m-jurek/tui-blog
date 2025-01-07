@@ -1,40 +1,48 @@
-open Minttea
+module type Renderer = sig
+  val render : unit -> unit
+end
 
-let dark_gray = Spices.color "241"
+module Renderer : Renderer = struct
+  open Minttea
 
-let keyword fmt =
-  Spices.(default |> faint true |> fg dark_gray |> bold true |> build) fmt
+  let red = Spices.color "204"
+  let gray = Spices.color "235"
+  let dark_gray = Spices.color "241"
+  let keyword = Spices.(default |> fg red |> bg gray |> build)
+  let help = Spices.(default |> fg dark_gray |> build)
 
-let red fmt = Spices.(default |> fg (color "#992222") |> build) fmt
+  type model =
+    { altscreen : bool
+    ; quitting : bool
+    }
 
-type s = { counter : int; keys : string list }
+  let init _ = Command.Noop
+  let initial_model = { altscreen = false; quitting = false }
 
-let init _ = Command.Noop
-let initial_model = { counter = 0; keys = [] }
+  let update event model =
+    match event with
+    | Event.KeyDown (Key "q" | Escape) -> { model with quitting = true }, Command.Quit
+    | Event.KeyDown Space ->
+      let cmd =
+        if model.altscreen
+        then Command.Exit_alt_screen
+        else Minttea.Command.Enter_alt_screen
+      in
+      { model with altscreen = not model.altscreen }, cmd
+    | _ -> model, Command.Noop
+  ;;
 
-let update event model =
-  match event with
-  | Event.KeyDown ((Key "q" | Escape)) -> (model, Command.Quit)
-  | Event.KeyDown (Key "k") ->
-      let model = { counter = model.counter + 1; keys = model.keys} in
-      (model, Command.Noop)
-  | Event.KeyDown (Key "j") ->
-      let model = { counter = model.counter - 1; keys = model.keys} in
-      (model, Command.Noop)
-  | Event.KeyDown (Key k) ->
-      let model = { counter = model.counter; keys = model.keys @ [ k ] } in
-      (model, Command.Noop)
-  | _ -> (model, Command.Noop)
+  let view model =
+    if model.quitting
+    then "Bye!\n"
+    else (
+      let mode = if model.altscreen then "altscreen" else "inline" in
+      let mode = keyword "%s" mode in
+      let help = help "  space: switch modes • q: exit\n" in
+      Format.sprintf "\n\n You're in %s mode\n\n\n%s" mode help)
+  ;;
 
-let view model =
-  if model.counter = -1 then keyword "goodbye!"
-  else
-    let first_6 =
-      model.keys |> List.to_seq |> Seq.take 6 |> List.of_seq |> String.concat ""
-    in
-    let rest =
-      model.keys |> List.to_seq |> Seq.drop 6 |> List.of_seq |> String.concat ""
-    in
-    keyword "%d" model.counter ^ " " ^ first_6 ^ red "%s" rest
+  let render () = Minttea.app ~init ~update ~view () |> Minttea.start ~initial_model
+end
 
-let () = Minttea.app ~init ~update ~view () |> Minttea.start ~initial_model
+let () = Renderer.render ()
