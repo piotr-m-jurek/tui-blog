@@ -1,4 +1,4 @@
 (executable
  (public_name tui_blog)
- (name main )
+ (name main)
  (libraries tui_blog minttea spices leaves))
