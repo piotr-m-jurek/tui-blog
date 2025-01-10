@@ -5,7 +5,10 @@ import paramiko
 import socket
 from threading import Event
 
-HOST_KEY = paramiko.RSAKey.from_private_key_file('./host.key')  # Read host key from file
+# WARN: This is merely DEMO PURPOSES. DON'T DEPLOY WITH YOUR KEY IN THE REPO
+# WARN: This is merely DEMO PURPOSES. DON'T DEPLOY WITH YOUR KEY IN THE REPO
+# WARN: This is merely DEMO PURPOSES. DON'T DEPLOY WITH YOUR KEY IN THE REPO
+HOST_KEY = paramiko.RSAKey.from_private_key_file("./host.key")
 
 
 class SSHHandler(paramiko.ServerInterface):
@@ -92,7 +95,9 @@ def start_ssh_server(host="0.0.0.0", port=2222):
     print(f"SSH server listening on {host}:{port}")
 
     while True:
-        client_socket, addr = server_socket.accept()  # Added addr to get connection info
+        client_socket, addr = (
+            server_socket.accept()
+        )  # Added addr to get connection info
         try:
             print(f"New connection from {addr}")
             handle_ssh_connection(client_socket)
