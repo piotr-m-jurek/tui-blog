@@ -7,7 +7,20 @@ proof of concept of running tui app via ssh
 2. `eval $(opam env)`
 3. `opam exec -- dune build`
 
-1. `pipenv shell`
-2. `python server.py`
+## run server
 
+1. get python shell and install dependencies
+```python
+pipenv shell
+```
+2. run server. This step assumes that you've build the tui before that
+```python
+python server.py
+```
+
+## connect to via ssh
+
+```sh
+ssh -p 2222 localhost
+```
 
