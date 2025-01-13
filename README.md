@@ -3,6 +3,7 @@
 proof of concept of running tui app via ssh
 
 ## build ocaml
+
 1. create switch
 
 ```sh
@@ -15,9 +16,11 @@ opam switch create . 5.2.0 -y --deps-only
 eval $(opam env)
 ```
 3. build package
+
 ```sh
 opam exec -- dune build
 ```
+
 
 ## run server
 
